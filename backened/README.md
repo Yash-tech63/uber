@@ -78,9 +78,97 @@ Content-Type: `application/json`
 
 ```json
 {
+
+---
+
+## GET /user/profile
+
+Retrieves the authenticated user's profile information. Requires a valid authentication token.
+
+### Request Headers
+
+```
+Authorization: Bearer <token>
+```
+
+or
+
+```
+Cookie: token=<token>
+```
+
+### Success Response
+
+- Status: `200 OK`
+- Body: authenticated user object with profile data
+
+#### Example Response
+
+```json
+{
+  "fullname": {
+    "firstname": "John",
+    "lastname": "Doe"
+  },
   "email": "john.doe@example.com",
-  "password": "securePassword123"
+  "_id": "64fbe12345abcdef67890123",
+  "createdAt": "2026-06-12T00:00:00.000Z",
+  "updatedAt": "2026-06-12T00:00:00.000Z"
 }
+```
+
+### Error Responses
+
+- `401 Unauthorized`
+  - returned when no authentication token is provided
+  - returned when the token is invalid or expired
+
+### Notes
+
+- This endpoint requires authentication via the `authMiddleware.authUser` middleware.
+- The user data is extracted from the authenticated request context (`req.user`).
+
+---
+
+## GET /user/logout
+
+Logs out the authenticated user by clearing the authentication token and blacklisting it to prevent reuse.
+
+### Request Headers
+
+```
+Authorization: Bearer <token>
+```
+
+or
+
+```
+Cookie: token=<token>
+```
+
+### Success Response
+
+- Status: `200 OK`
+- Body:
+  - `message` (string): confirmation message
+
+#### Example Response
+
+```json
+{
+  "message": "logged out"
+}
+```
+
+### Error Responses
+
+No specific error responses documented. Standard HTTP errors may occur.
+
+### Notes
+
+- The endpoint clears the `token` cookie from the client.
+- The token is added to a blacklist to prevent it from being reused for authentication.
+- After logout, the client should discard any stored authentication tokens.
 ```
 
 ### Field Requirements
