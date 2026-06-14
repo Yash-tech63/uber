@@ -65,3 +65,65 @@ Content-Type: `application/json`
 
 - The endpoint uses `express-validator` to validate incoming request data.
 - Passwords are hashed before the user is saved.
+
+---
+
+## POST /user/login
+
+Authenticates a user with email and password, returns an authentication token if credentials are valid.
+
+### Request Body
+
+Content-Type: `application/json`
+
+```json
+{
+  "email": "john.doe@example.com",
+  "password": "securePassword123"
+}
+```
+
+### Field Requirements
+
+- `email` (string): required, must be a valid email address
+- `password` (string): required, must be at least 6 characters
+
+### Success Response
+
+- Status: `200 OK`
+- Body:
+  - `token` (string): authentication token for the user
+  - `user` (object): authenticated user data
+
+#### Example Response
+
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "user": {
+    "fullname": {
+      "firstname": "John",
+      "lastname": "Doe"
+    },
+    "email": "john.doe@example.com",
+    "_id": "64fbe12345abcdef67890123",
+    "createdAt": "2026-06-12T00:00:00.000Z",
+    "updatedAt": "2026-06-12T00:00:00.000Z"
+  }
+}
+```
+
+### Error Responses
+
+- `400 Bad Request`
+  - validation failed for the request body
+  - returned when required fields are missing or invalid
+- `401 Unauthorized`
+  - returned when the email does not exist in the system
+  - returned when the password does not match the user's password
+
+### Notes
+
+- The endpoint uses `express-validator` to validate incoming request data.
+- Passwords are compared using bcrypt comparison to verify authenticity.
+- The returned `token` can be used to authenticate subsequent requests.
