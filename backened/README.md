@@ -353,3 +353,162 @@ Content-Type: `application/json`
 - Vehicle details are stored as a nested object within the captain profile.
 - Each captain can register only one vehicle during registration.
 - The returned token can be used to authenticate subsequent captain requests.
+
+---
+
+## POST /captain/login
+
+Authenticates a captain with email and password and returns an authentication token when credentials are valid.
+
+### Request Body
+
+Content-Type: `application/json`
+
+```json
+{
+  "email": "jane.smith@example.com",
+  "password": "securePassword123"
+}
+```
+
+### Field Requirements
+
+- `email` (string): required, must be a valid email address
+- `password` (string): required, must be at least 6 characters
+
+### Success Response
+
+- Status: `200 OK`
+- Body:
+  - `token` (string): authentication token for the captain
+  - `captain` (object): authenticated captain profile
+
+#### Example Response
+
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "captain": {
+    "fullname": {
+      "firstname": "Jane",
+      "lastname": "Smith"
+    },
+    "email": "jane.smith@example.com",
+    "vehicle": {
+      "color": "black",
+      "plate": "ABC123",
+      "capacity": 4,
+      "vehicleType": "car"
+    },
+    "_id": "64fbe12345abcdef67890124",
+    "createdAt": "2026-06-16T00:00:00.000Z",
+    "updatedAt": "2026-06-16T00:00:00.000Z"
+  }
+}
+```
+
+### Error Responses
+
+- `400 Bad Request`: validation failed for the request body
+- `401 Unauthorized`: returned when the email does not exist or the password is incorrect
+
+### Notes
+
+- A successful login sets an HTTP-only `token` cookie for browser clients and also returns a `token` in the response body.
+- The `token` can be used in `Authorization: Bearer <token>` or sent as a cookie for subsequent requests.
+
+---
+
+## GET /captain/profile
+
+Retrieves the authenticated captain's profile information. Requires a valid authentication token.
+
+### Request Headers
+
+```
+Authorization: Bearer <token>
+```
+
+or
+
+```
+Cookie: token=<token>
+```
+
+### Success Response
+
+- Status: `200 OK`
+- Body: authenticated captain object with profile and vehicle data
+
+#### Example Response
+
+```json
+{
+  "captain": {
+    "fullname": {
+      "firstname": "Jane",
+      "lastname": "Smith"
+    },
+    "email": "jane.smith@example.com",
+    "vehicle": {
+      "color": "black",
+      "plate": "ABC123",
+      "capacity": 4,
+      "vehicleType": "car"
+    },
+    "_id": "64fbe12345abcdef67890124",
+    "createdAt": "2026-06-16T00:00:00.000Z",
+    "updatedAt": "2026-06-16T00:00:00.000Z"
+  }
+}
+```
+
+### Error Responses
+
+- `401 Unauthorized`: returned when no authentication token is provided, or when the token is invalid, expired, or blacklisted
+
+### Notes
+
+- This endpoint is protected by `authMiddleware.authCaptain` and returns the captain object on `req.captain` after successful authentication.
+
+---
+
+## GET /captain/logout
+
+Logs out the authenticated captain by blacklisting the token and clearing the cookie.
+
+### Request Headers
+
+```
+Authorization: Bearer <token>
+```
+
+or
+
+```
+Cookie: token=<token>
+```
+
+### Success Response
+
+- Status: `200 OK`
+- Body:
+  - `message` (string): confirmation message
+
+#### Example Response
+
+```json
+{
+  "message": "log out successfully"
+}
+```
+
+### Error Responses
+
+- `400 Bad Request`: returned when the token is missing from both cookie and authorization header
+- `500 Internal Server Error`: unexpected server error while blacklisting token
+
+### Notes
+
+- The endpoint clears the `token` cookie and adds the token to a blacklist to prevent reuse.
+- After logout, the client should discard any stored authentication tokens.

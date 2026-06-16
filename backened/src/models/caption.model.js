@@ -76,7 +76,7 @@ captainSchema.methods.generateAuthToken = function () {
     const token = jwt.sign({ _id: this._id }, process.env.JWT_SECRET, { expiresIn: '24h' })
     return token;
 }
-captainSchema.method.comparePassword = async function (password) {
+captainSchema.methods.comparePassword = async function (password) {
     return await bcrypt.compare(password, this.password);
 }
 captainSchema.statics.hashPassword = async function (password) {
