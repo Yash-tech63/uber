@@ -263,3 +263,93 @@ No specific error responses documented. Standard HTTP errors may occur.
 - The endpoint uses `express-validator` to validate incoming request data.
 - Passwords are compared using bcrypt comparison to verify authenticity.
 - The returned `token` can be used to authenticate subsequent requests.
+
+---
+
+## POST /captain/register
+
+Registers a new captain with vehicle details and returns an authentication token with the created captain profile.
+
+### Request Body
+
+Content-Type: `application/json`
+
+```json
+{
+  "fullname": {
+    "firstname": "Jane",
+    "lastname": "Smith"
+  },
+  "email": "jane.smith@example.com",
+  "password": "securePassword123",
+  "vehicle": {
+    "color": "black",
+    "plate": "ABC123",
+    "capacity": 4,
+    "vehicleType": "car"
+  }
+}
+```
+
+### Field Requirements
+
+- `fullname` (object)
+  - `firstname` (string): required, at least 3 characters
+  - `lastname` (string): optional, but should be provided as part of the name object
+- `email` (string): required, must be a valid email address
+- `password` (string): required, must be at least 6 characters
+- `vehicle` (object)
+  - `color` (string): required, must be at least 3 characters
+  - `plate` (string): required, must be at least 3 characters (vehicle registration plate)
+  - `capacity` (number): required, must be at least 1 (number of passengers)
+  - `vehicleType` (string): required, must be one of: `'car'`, `'motorcycle'`, `'auto'`
+
+### Success Response
+
+- Status: `201 Created`
+- Body:
+  - `token` (string): authentication token for the created captain
+  - `captain` (object): created captain profile with vehicle details
+
+#### Example Response
+
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "captain": {
+    "fullname": {
+      "firstname": "Jane",
+      "lastname": "Smith"
+    },
+    "email": "jane.smith@example.com",
+    "vehicle": {
+      "color": "black",
+      "plate": "ABC123",
+      "capacity": 4,
+      "vehicleType": "car"
+    },
+    "_id": "64fbe12345abcdef67890124",
+    "createdAt": "2026-06-16T00:00:00.000Z",
+    "updatedAt": "2026-06-16T00:00:00.000Z"
+  }
+}
+```
+
+### Error Responses
+
+- `400 Bad Request`
+  - validation failed for the request body
+  - returned when required fields are missing or invalid
+  - returned when vehicle type is not one of the accepted values
+- `400 Bad Request`
+  - returned if a captain with the same email already exists
+- `500 Internal Server Error`
+  - returned when an unexpected server error occurs during registration
+
+### Notes
+
+- The endpoint uses `express-validator` to validate incoming request data.
+- Passwords are hashed before the captain profile is saved.
+- Vehicle details are stored as a nested object within the captain profile.
+- Each captain can register only one vehicle during registration.
+- The returned token can be used to authenticate subsequent captain requests.
