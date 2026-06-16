@@ -68,9 +68,9 @@ Content-Type: `application/json`
 
 ---
 
-## POST /user/login
+## POST /users/login
 
-Authenticates a user with email and password, returns an authentication token if credentials are valid.
+Authenticates a user with email and password and returns an authentication token when credentials are valid.
 
 ### Request Body
 
@@ -78,10 +78,58 @@ Content-Type: `application/json`
 
 ```json
 {
+  "email": "john.doe@example.com",
+  "password": "securePassword123"
+}
+```
+
+### Field Requirements
+
+- `email` (string): required, must be a valid email address
+- `password` (string): required, must be at least 6 characters
+
+### Success Response
+
+- Status: `200 OK`
+- Body:
+  - `token` (string): authentication token for the user
+  - `user` (object): authenticated user data
+
+#### Example Response
+
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "user": {
+    "fullname": {
+      "firstname": "John",
+      "lastname": "Doe"
+    },
+    "email": "john.doe@example.com",
+    "_id": "64fbe12345abcdef67890123",
+    "createdAt": "2026-06-12T00:00:00.000Z",
+    "updatedAt": "2026-06-12T00:00:00.000Z"
+  }
+}
+```
+
+### Error Responses
+
+- `400 Bad Request`
+  - returned when required fields are missing or invalid
+- `401 Unauthorized`
+  - returned when the email does not exist
+  - returned when the password is incorrect
+
+### Notes
+
+- The endpoint validates input using `express-validator`.
+- A successful login also sets an HTTP-only `token` cookie for browser clients.
+- The returned token can be sent in `Authorization: Bearer <token>` or stored in a cookie for later requests.
 
 ---
 
-## GET /user/profile
+## GET /users/profile
 
 Retrieves the authenticated user's profile information. Requires a valid authentication token.
 
@@ -121,16 +169,16 @@ Cookie: token=<token>
 
 - `401 Unauthorized`
   - returned when no authentication token is provided
-  - returned when the token is invalid or expired
+  - returned when the token is invalid, expired, or blacklisted
 
 ### Notes
 
-- This endpoint requires authentication via the `authMiddleware.authUser` middleware.
-- The user data is extracted from the authenticated request context (`req.user`).
+- This endpoint is protected by `authMiddleware.authUser`.
+- User profile data is returned from `req.user` after successful authentication.
 
 ---
 
-## GET /user/logout
+## GET /users/logout
 
 Logs out the authenticated user by clearing the authentication token and blacklisting it to prevent reuse.
 
