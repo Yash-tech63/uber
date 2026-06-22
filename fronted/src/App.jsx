@@ -1,11 +1,17 @@
 import React, { useContext } from 'react'
 import { Route, Routes } from 'react-router-dom'
-import Home from '../src/pages/Home'
+import Home from './pages/Home'
 import UserLogin from '../src/pages/UserLogin'
 import UserSignup from '../src/pages/Usersignup'
 import CaptainLogin from '../src/pages/Captainlogin'
 import Captainsign from '../src/pages/CaptainsignUp'
 import { UserDataContext } from '../src/context/UserContext'
+import Start from './pages/Start'
+import UserProtectWrapper from './pages/UserProtectWrapper'
+import UserLogout from './pages/UserLogout'
+import CaptainHome from './pages/CaptainHome'
+import CaptainProtectWrapper from './pages/CaptainProtectWrapper'
+import CaptainLogout from './pages/CaptainLogout'
 
 const App = () => {
   const ans = useContext(UserDataContext)
@@ -13,12 +19,32 @@ const App = () => {
   return (
     <div>
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<Start />} />
         <Route path="/login" element={<UserLogin />} />
         <Route path='/sign' element={<UserSignup />} />
         <Route path='/captain-login' element={<CaptainLogin />} />
         <Route path='/captain-sign' element={<Captainsign />} />
+        <Route path="/home" element={
+          <UserProtectWrapper>
+            <Home />
+          </UserProtectWrapper>
+        } />
+        <Route path="/logout" element={
+          <UserProtectWrapper>
+            <UserLogout />
+          </UserProtectWrapper>
+        } />
+        <Route path="/captain-home" element={
+          <CaptainProtectWrapper>
+            <CaptainHome />
 
+          </CaptainProtectWrapper>
+        } />
+        <Route path="/captain-logout" element={
+          <CaptainProtectWrapper>
+            <CaptainLogout />
+          </CaptainProtectWrapper>
+        } />
       </Routes>
 
     </div>
